@@ -1,0 +1,54 @@
+Part 2: Pneumonia Prediction Dataset (20 Pts)
+For Part 2, download the Kaggle Dataset Chest X-Ray Images (Pneumonia)4 – also stored in
+the cluster.
+Q1: Exploratory Data Analysis (4 Pts)
+Download and explore the data.
+- Explore the label distribution and qualitatively describe the data by plotting some
+examples for both labels (Q1.1. [1 Pt]).
+- Do you see visual differences between healthy and disease samples? (Q1.2. [1 Pt])
+- Describe one potential source of bias that could influence model performance (Q1.3. [1 Pt])
+- How do you preprocess the data for your further analysis? (Q1.4. [1 Pt])
+Q2: CNN Classifier (3 Pts)
+In Q3 and Q4, we will aim to use post-hoc explainability methods for visualizing the parts of the
+image that are important for the prediction of a model. To do that, first
+- design a CNN classifier for the dataset (Q2.1. [2 Pt])
+and then
+- report its performance on a test set (Q2.2. [1 Pt]).
+Q3: Integrated Gradients5 (5 Pts)
+Like MLPs, CNNs perform very well in tasks like classification, but lack interpretability due to
+their black-box nature. Like in part 1, post-hoc explainability methods are thus suitable
+alternatives. One class of post-hoc procedures specific to image data are methods that
+generate attribution maps that highlight the most important regions on which the CNN bases its
+predictions. For this part of the assignment,
+- implement the integrated gradients method and visualize attribution maps of five healthy
+and five disease test samples (Q3.1. [2 Pt])
+Additionally, answer the following questions. When needed, support your answers with a figure.
+- Do the maps highlight sensible regions? (Q3.2. [1 Pt])
+- Are attributions consistent across samples? (Q3.3. [1 Pt])
+- Does the choice of baseline input image have a big effect on the attribution maps?
+(Q3.4. [1 Pt])
+4 Kermany et al., “Identifying Medical Diagnoses and Treatable Diseases by Image-Based Deep
+Learning.”
+5 Sundararajan, Taly, and Yan, “Axiomatic Attribution for Deep Networks.”
+Q4: Grad-CAM6 (5 Pts)
+Grad-CAM is another post-hoc method that generates attribution maps. Like in Q3,
+- implement the method and visualize attribution maps of five healthy and five disease test
+samples (Q4.1. [2 Pt])
+Additionally, answer the following questions. When needed, support your answers with a figure.
+- Do the maps highlight sensible regions? (Q4.2. [1 Pt])
+- Are attributions consistent across samples? (Q4.3. [1 Pt])
+- Compare your findings with Q3. (Q4.4. [2 Pt])
+Q5: Data Randomization Test7 (3 Pts)
+The paper “Sanity Checks for Saliency Maps.” introduced the data randomization test to check
+the trustworthiness of the saliency maps of specific methods. They propose to retrain the
+classifier on the train set when randomly permuting labels of all samples. Then, they compare
+the saliency maps on test samples for the perturbed and unperturbed classifiers. We expect the
+map to change if an attribution map accurately captures the relationship between instances and
+their labels. Conversely, if the attribution map captures another concept, e.g., acts like an edge
+detector independent of the label, we expect the maps to stay the same. Read the paper and
+- retrain your CNN on random training labels (Q5.1. [1 Pt])
+Additionally,
+- perform the Data randomization Test for both Integrated Gradients and Grad-CAM
+(Q5.2. [1 Pt])
+Do they pass or fail?
+- Elaborate and visualize your findings (Q5.3. [1 Pt])  
