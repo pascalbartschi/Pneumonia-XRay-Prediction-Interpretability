@@ -6,3 +6,5 @@ scikit-learn
 tensorflow
 keras
 jupyter
+torch
+torchvision
