@@ -2,6 +2,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from torchvision import models
+from torchvision.models.resnet import ResNet, BasicBlock
+
 class PneumoniaCNN(nn.Module):
     def __init__(self):
         super(PneumoniaCNN, self).__init__()
@@ -19,3 +22,12 @@ class PneumoniaCNN(nn.Module):
         x = x.view(-1, 64 * 56 * 56)
         x = F.relu(self.fc1(x))
         return self.fc2(x)
+    
+class PneumoniaResNet(nn.Module):
+    def __init__(self, num_classes=2):
+        super(PneumoniaResNet, self).__init__()
+        self.resnet = models.resnet18(pretrained=True)
+        self.resnet.fc = nn.Linear(self.resnet.fc.in_features, num_classes)
+
+    def forward(self, x):
+        return self.resnet(x)

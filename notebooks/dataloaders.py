@@ -11,6 +11,26 @@ transform = transforms.Compose([
     transforms.Normalize(mean=[0.5], std=[0.5])  # Grayscale normalization
 ])
 
+# Additional transformations for data augmentation, class balancing, and noise reduction
+
+data_augmentation_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.RandomHorizontalFlip(),  # Randomly flip images horizontally
+    transforms.RandomRotation(10),  # Randomly rotate images by up to 10 degrees
+    transforms.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),  # Adjust brightness, contrast, etc.
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5], std=[0.5])
+])
+
+# noise_reduction_transform = transforms.Compose([
+#     transforms.Resize((224, 224)),
+#     transforms.ToTensor(),
+#     transforms.Lambda(lambda x: x - x.mean()),  # Subtract mean to reduce noise
+#     transforms.Normalize(mean=[0.5], std=[0.5])
+# ])
+
+# todo use weight sampling 
+
 # Set up paths
 data_dir = config.datapath / "chest_xray"
 train_dir = data_dir / "train"
