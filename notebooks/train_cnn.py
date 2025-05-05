@@ -39,3 +39,5 @@ with torch.no_grad():
         all_labels.extend(labels.numpy())
 
 print(f"Test Accuracy: {accuracy_score(all_labels, all_preds):.4f}")
+
+torch.save(model, "cnn_model.pt")
