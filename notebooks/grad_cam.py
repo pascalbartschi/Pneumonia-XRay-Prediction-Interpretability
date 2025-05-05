@@ -2,22 +2,33 @@ import torch
 import torch.nn.functional as F
 import numpy as np
 import matplotlib.pyplot as plt
+import cv2
 
 class GradCAM:
     def __init__(self, model, target_layer):
         self.model = model
         self.target_layer = target_layer
         self.gradients = None
+        self.activations = None
+
+        # Hook to capture activations
+        self.target_layer.register_forward_hook(self.save_activations)
 
         # Hook to capture gradients
         self.target_layer.register_backward_hook(self.save_gradients)
 
     def save_gradients(self, module, grad_input, grad_output):
         self.gradients = grad_output[0]
+    
+    def save_activations(self, module, input, output):
+        self.activations = output
 
     def generate_cam(self, input_tensor, class_idx=None):
+
+        # input_tensor = input_tensor.requires_grad_(True)
         # Forward pass
         output = self.model(input_tensor)
+
         if class_idx is None:
             class_idx = torch.argmax(output, dim=1).item()
 
@@ -28,7 +39,7 @@ class GradCAM:
 
         # Get gradients and activations
         gradients = self.gradients.cpu().data.numpy()[0]
-        activations = self.target_layer.output.cpu().data.numpy()[0]
+        activations = self.activations.cpu().data.numpy()[0]
 
         # Compute weights
         weights = np.mean(gradients, axis=(1, 2))
@@ -39,17 +50,32 @@ class GradCAM:
             cam += w * activations[i]
 
         # Normalize CAM
-        cam = np.maximum(cam, 0)
+        cam = np.maximum(cam, 0) # ensure the array is greater 0
         cam = cam / cam.max()
         return cam
-
+    
     def overlay_cam(self, image, cam, alpha=0.5):
         cam = np.uint8(255 * cam)
-        cam = np.stack([cam, cam, cam], axis=-1)  # Convert to 3-channel RGB
-        cam = np.resize(cam, image.shape)  # Resize to match image dimensions
+        cam = cv2.resize(cam, (image.shape[1], image.shape[0]))
+        cam = np.stack([cam, cam, cam], axis=-1)
+        cam = cv2.applyColorMap(cam, cv2.COLORMAP_JET)
+        cam = cv2.cvtColor(cam, cv2.COLOR_BGR2RGB)
         overlay = (1 - alpha) * image + alpha * cam
         overlay = np.clip(overlay, 0, 255).astype(np.uint8)
         return overlay
+
+    # def overlay_cam(self, image, cam, alpha=0.5):
+    #     cam = np.uint8(255 * cam)
+    #     cam = np.stack([cam, cam, cam], axis=-1)  # Convert to 3-channel RGB
+    #     cam = np.resize(cam, image.shape)  # Resize to match image dimensions
+    #     overlay = (1 - alpha) * image + alpha * cam
+    #     overlay = np.clip(overlay, 0, 255).astype(np.uint8)
+    #     return overlay
+
+    def remove_hooks(self):
+        self.target_layer._forward_hooks.clear()
+        self.target_layer._backward_hooks.clear()
+
 
 # Example usage
 if __name__ == "__main__":
