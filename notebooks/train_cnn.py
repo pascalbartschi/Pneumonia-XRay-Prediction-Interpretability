@@ -40,4 +40,5 @@ with torch.no_grad():
 
 print(f"Test Accuracy: {accuracy_score(all_labels, all_preds):.4f}")
 
-torch.save(model, "cnn_model.pt")
+#torch.save(model, "cnn_model.pt")
+torch.save(model.state_dict(), "cnn_model.pt")

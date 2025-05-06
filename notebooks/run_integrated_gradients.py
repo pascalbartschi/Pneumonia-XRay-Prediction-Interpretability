@@ -14,7 +14,8 @@ device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 # Load model
 model = PneumoniaCNN().to(device)
-model = torch.load("cnn_model.pt", map_location=device)
+#model = torch.load("cnn_model.pt", map_location=device)
+model.load_state_dict(torch.load("cnn_model.pt", map_location=device))
 model.eval()
 
 # Collect 5 healthy and 5 pneumonia images
