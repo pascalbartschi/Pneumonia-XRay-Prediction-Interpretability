@@ -4,6 +4,29 @@ import numpy as np
 import matplotlib.pyplot as plt
 import cv2
 
+def get_conv_layer_by_index(model, index):
+    """
+    Get the nth convolutional layer from a model
+    
+    Args:
+        model: PyTorch model
+        index (int): Index of the convolutional layer (0-based)
+        
+    Returns:
+        layer: The selected convolutional layer
+    """
+    conv_layers = []
+    
+    # Collect all conv layers in the model
+    for name, layer in model.named_modules():
+        if isinstance(layer, torch.nn.Conv2d):
+            conv_layers.append((name, layer))
+    
+    if index < 0 or index >= len(conv_layers):
+        raise ValueError(f"Index {index} is out of range. Model has {len(conv_layers)} convolutional layers.")
+    
+    return conv_layers[index][1]  # Return the layer object
+
 class GradCAM:
     def __init__(self, model, target_layer):
         self.model = model
@@ -77,19 +100,47 @@ class GradCAM:
         self.target_layer._backward_hooks.clear()
 
 
+# Function to create GradCAM by layer index
+def create_gradcam_by_layer_index(model, conv_layer_idx):
+    """
+    Create a GradCAM instance using a specific convolutional layer index
+    
+    Args:
+        model: PyTorch model
+        conv_layer_idx (int): Index of the convolutional layer to use (0-based)
+        
+    Returns:
+        GradCAM: Initialized GradCAM instance
+    """
+    target_layer = get_conv_layer_by_index(model, conv_layer_idx)
+    return GradCAM(model, target_layer)
+
+
 # Example usage
 if __name__ == "__main__":
     from models import PneumoniaCNN
     from dataloaders import val_loader
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    model = PneumoniaResNet().to(device)
+    model = PneumoniaCNN().to(device)
     model.eval()
 
-    # Select a target layer (e.g., the last convolutional layer)
-    target_layer = model.model.layer4[1].conv2
+    # Method 1: Select target layer directly
+    # target_layer = model.model.layer4[1].conv2
+    # grad_cam = GradCAM(model, target_layer)
 
-    grad_cam = GradCAM(model, target_layer)
+    # Method 2: Select target layer by index
+    # Print convolutional layers to see what's available
+    conv_layers = []
+    for name, layer in model.named_modules():
+        if isinstance(layer, torch.nn.Conv2d):
+            conv_layers.append((name, layer))
+    print(f"Found {len(conv_layers)} convolutional layers:")
+    for i, (name, _) in enumerate(conv_layers):
+        print(f"  {i}: {name}")
+        
+    # Create GradCAM using second convolutional layer (index 1)
+    grad_cam = create_gradcam_by_layer_index(model, 1)
 
     # Get a sample input
     data_iter = iter(val_loader)
