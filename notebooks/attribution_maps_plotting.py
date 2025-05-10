@@ -11,6 +11,8 @@ from torch import nn, optim
 from torchvision.transforms import GaussianBlur
 import os
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 ######################## HELPER FUNCTIONS ########################
 
 # Define get_samples_by_label function
@@ -115,7 +117,7 @@ def visualize_ig_for_images(conv_layer_idx, models, loader, n=5, model_names=Non
         
         # Display the first model's attribution map
         axes[0, i].imshow(overlay_ig_normal[0])
-        axes[0, i].set_title(f"Normal {i+1}")
+        # axes[0, i].set_title(f"Normal {i+1}")
         axes[0, i].axis("off")
         axes[0, i].text(0.05, 0.05, subplot_labels[i], transform=axes[0, i].transAxes, 
                         fontsize=14, fontweight='bold', color='white', 
@@ -197,7 +199,7 @@ def visualize_gradcam_for_images(conv_layer_idx, models, loader, n=5, model_name
         
         # Display the first model's CAM
         axes[0, i].imshow(overlay_cam_normal[0])
-        axes[0, i].set_title(f"Normal {i+1}")
+        # axes[0, i].set_title(f"Normal {i+1}")
         axes[0, i].axis("off")
         axes[0, i].text(0.05, 0.05, subplot_labels[i], transform=axes[0, i].transAxes, 
                         fontsize=14, fontweight='bold', color='white', 
@@ -220,7 +222,7 @@ def visualize_gradcam_for_images(conv_layer_idx, models, loader, n=5, model_name
         
         # Display the first model's CAM
         axes[1, i].imshow(overlay_cam_pneumonia[0])
-        axes[1, i].set_title(f"Pneumonia {i+1}")
+        # axes[1, i].set_title(f"Pneumonia {i+1}")
         axes[1, i].axis("off")
         axes[1, i].text(0.05, 0.05, subplot_labels[n + i], transform=axes[1, i].transAxes, 
                         fontsize=14, fontweight='bold', color='white', 
