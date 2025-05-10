@@ -4,11 +4,21 @@ from config import config
 from pathlib import Path
 
 # Define image transformations
-transform = transforms.Compose([
+transform_test_val = transforms.Compose([
     transforms.Resize((224, 224)),
     #transforms.Grayscale(num_output_channels=1),
     transforms.ToTensor(),
     transforms.Normalize(mean=[0.5], std=[0.5])  # Grayscale normalization
+])
+
+
+
+transform_train = transforms.Compose([
+    transforms.RandomHorizontalFlip(),
+    transforms.RandomRotation(10),
+    transforms.RandomResizedCrop(224, scale=(0.8, 1.0)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=[0.5]*3, std=[0.5]*3)
 ])
 
 # Set up paths
@@ -18,9 +28,9 @@ val_dir = data_dir / "val"
 test_dir = data_dir / "test"
 
 # Create datasets
-train_dataset = datasets.ImageFolder(train_dir, transform=transform)
-val_dataset = datasets.ImageFolder(val_dir, transform=transform)
-test_dataset = datasets.ImageFolder(test_dir, transform=transform)
+train_dataset = datasets.ImageFolder(train_dir, transform=transform_train)
+val_dataset = datasets.ImageFolder(val_dir, transform=transform_test_val)
+test_dataset = datasets.ImageFolder(test_dir, transform=transform_test_val)
 
 # Create dataloaders
 train_loader = DataLoader(train_dataset, batch_size=32, shuffle=True)

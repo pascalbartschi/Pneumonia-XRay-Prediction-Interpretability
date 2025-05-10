@@ -33,20 +33,20 @@ for epoch in range(5):  # Feel free to increase for better performance
 
     print(f"Epoch {epoch+1}, Loss: {running_loss / len(train_loader):.4f}")
 
-# # Evaluation
-# model.eval()
-# all_preds = []
-# all_labels = []
-#
-# with torch.no_grad():
-#     for inputs, labels in test_loader:
-#         inputs = inputs.to(device)
-#         outputs = model(inputs)
-#         preds = torch.argmax(outputs, dim=1).cpu().numpy()
-#         all_preds.extend(preds)
-#         all_labels.extend(labels.numpy())
-#
-# print(f"Test Accuracy: {accuracy_score(all_labels, all_preds):.4f}")
+# Evaluation
+model.eval()
+all_preds = []
+all_labels = []
 
-#torch.save(model, "cnn_model.pt")
-torch.save(model.state_dict(), "cnn_model_randomized.pt")
+with torch.no_grad():
+    for inputs, labels in test_loader:
+        inputs = inputs.to(device)
+        outputs = model(inputs)
+        preds = torch.argmax(outputs, dim=1).cpu().numpy()
+        all_preds.extend(preds)
+        all_labels.extend(labels.numpy())
+
+print(f"Test Accuracy: {accuracy_score(all_labels, all_preds):.4f}")
+
+torch.save(model, "cnn_model_randomized.pt")
+torch.save(model.state_dict(), "cnn_model_randomized_2.pt")
