@@ -17,4 +17,6 @@ pip install -r requirements.txt
 ## Reproducing Results
 
 1. Download the dataset and place it in the `data` folder.
-2. Follow the steps in the project files to preprocess the data, train the CNN, and apply interpretability techniques.
+2. Run `EDA.ipynb` to get some basic analytics of the dataset.
+3. Run train_cnn.py which will create two state dictionaries named `cnn_model_randomized_with_sampling_1.pt` and `cnn_model_with_sampling_1.pt` which should be saved in a folder called `model_state_dicts` and give you accuracy and F1 score of the CNN run both with normal dataset and with a dataset where training samples have randomized labels. 
+4. Finally run `attribution_maps_figure.ipynb` to generate all the images and plots. 
