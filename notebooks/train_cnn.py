@@ -75,8 +75,8 @@ if __name__ == "__main__":
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
-    # Train the model
-    train_net(model, randomized_train_loader, val_loader, criterion, optimizer, device, epochs=5)
+    # Train the normal model
+    train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5)
     #train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5)
     #model.load_state_dict(torch.load("../model_state_dicts/cnn_model_transformed.pt", map_location=device))
     model.eval()
@@ -88,5 +88,24 @@ if __name__ == "__main__":
     eval_net(model, test_loader, device)
 
 
+
+    torch.save(model.state_dict(), "../model_state_dicts/cnn_model_with_sampling_1.pt")
+
+
+    model = PneumoniaCNN()
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(model.parameters(), lr=0.001)
+
+    # Train the randomized model
+    train_net(model, randomized_train_loader, val_loader, criterion, optimizer, device, epochs=5)
+    # train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5)
+    # model.load_state_dict(torch.load("../model_state_dicts/cnn_model_transformed.pt", map_location=device))
+    model.eval()
+
+    # Evaluate the model
+    # print("Validation Set:")
+    # eval_net(model, val_loader, device)
+    print("Test Set:")
+    eval_net(model, test_loader, device)
 
     torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized_with_sampling_1.pt")
