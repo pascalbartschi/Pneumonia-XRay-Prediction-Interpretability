@@ -2,6 +2,7 @@ import torch
 from torch import nn, optim
 from sklearn.metrics import accuracy_score
 from dataloaders import train_loader, val_loader, test_loader
+from dataloader_randomized import randomized_train_loader
 #from models import PneumoniaResNet
 from models import PneumoniaCNN
 from tqdm import tqdm
@@ -10,13 +11,15 @@ import numpy as np
 def train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = False):
     model.to(device)
     progress_bar = tqdm(range(epochs), desc="Training Progress", leave=True)
-    print("First 10 randomized labels in training set:", train_loader.dataset.targets[:10])
-    # Randomize labels iff running randomization
-    if randomized:
-        np.random.seed(42)
-        train_loader.dataset.targets = np.random.permutation(train_loader.dataset.targets).tolist()
+    # print("First 10 unrandomized labels in training set:", train_loader.dataset.targets[:10])
+    # # Randomize labels iff running randomization
+    # if randomized:
+    #     np.random.seed(42)
+    #     train_loader.dataset.targets = np.random.permutation(train_loader.dataset.targets).tolist()
+    #
+    # print("First 10 randomized labels in training set:", train_loader.dataset.targets[:10])
 
-    print("First 10 randomized labels in training set:", train_loader.dataset.targets[:10])
+
 
     for epoch in progress_bar:
         model.train()
@@ -64,6 +67,9 @@ def eval_net(model, data_loader, device):
     print(f"Accuracy: {accuracy:.4f}")
     return accuracy
 
+
+
+
 if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     model = PneumoniaCNN()
@@ -71,9 +77,9 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # Train the model
-    train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = True)
-    #model.load_state_dict(torch.load("../model_state_dicts/cnn_model_randomized_2.pt", map_location=device))
-    #model.eval()
+    train_net(model, randomized_train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = True)
+    #model.load_state_dict(torch.load("../model_state_dicts/cnn_model_randomized.pt", map_location=device))
+    model.eval()
 
     # Evaluate the model
     # print("Validation Set:")
@@ -83,4 +89,4 @@ if __name__ == "__main__":
 
 
 
-    torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized.pt")
+    torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized_and_equalized.pt")
