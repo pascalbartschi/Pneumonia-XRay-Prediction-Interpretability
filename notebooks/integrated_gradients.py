@@ -92,7 +92,7 @@ if __name__ == "__main__":
     baseline = blur(images[0]).unsqueeze(0).to(device)
 
     # Compute attributions
-    attributions = ig.generate_attributions(input_tensor, target_class=0, baseline=baseline)
+    attributions = ig.generate_attributions(input_tensor, target_class=1, baseline=baseline)
     attr_map = ig.process_attributions(attributions)
 
     # Preprocess original image to match Grad-CAM pipeline

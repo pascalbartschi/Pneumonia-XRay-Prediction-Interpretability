@@ -232,7 +232,7 @@ def visualize_gradcam_for_images(conv_layer_idx, models, loader, n=5, model_name
     plt.tight_layout()
     plt.show()
 
-def visualize_comparisons(idx, conv_layer_idx, models, loader, n=5, model_names=None, baseline_type='gray'):
+def visualize_comparisons(idx, conv_layer_idx, models, loader, n=5, model_names=None, baseline_type='zero'):
     """
     Visualize comparison between models using Grad-CAM and Integrated Gradients
     

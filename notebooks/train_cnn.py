@@ -1,25 +1,16 @@
 import torch
 from torch import nn, optim
-from sklearn.metrics import accuracy_score
 from dataloaders import train_loader, val_loader, test_loader
 from dataloader_randomized import randomized_train_loader
 #from models import PneumoniaResNet
 from models import PneumoniaCNN
 from tqdm import tqdm
 import numpy as np
+from sklearn.metrics import accuracy_score, f1_score
 
-def train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = False):
+def train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5):
     model.to(device)
     progress_bar = tqdm(range(epochs), desc="Training Progress", leave=True)
-    # print("First 10 unrandomized labels in training set:", train_loader.dataset.targets[:10])
-    # # Randomize labels iff running randomization
-    # if randomized:
-    #     np.random.seed(42)
-    #     train_loader.dataset.targets = np.random.permutation(train_loader.dataset.targets).tolist()
-    #
-    # print("First 10 randomized labels in training set:", train_loader.dataset.targets[:10])
-
-
 
     for epoch in progress_bar:
         model.train()
@@ -52,6 +43,10 @@ def train_net(model, train_loader, val_loader, criterion, optimizer, device, epo
         val_accuracy = accuracy_score(all_labels, all_preds)
         print(f"Validation Loss: {val_loss / len(val_loader):.4f}, Validation Accuracy: {val_accuracy:.4f}")
 
+
+
+
+
 def eval_net(model, data_loader, device):
     model.eval()
     all_preds = []
@@ -63,9 +58,13 @@ def eval_net(model, data_loader, device):
             preds = torch.argmax(outputs, dim=1).cpu().numpy()
             all_preds.extend(preds)
             all_labels.extend(labels.numpy())
+
     accuracy = accuracy_score(all_labels, all_preds)
+    f1 = f1_score(all_labels, all_preds, average='binary')  # Assuming binary classification with labels 0 and 1
+
     print(f"Accuracy: {accuracy:.4f}")
-    return accuracy
+    print(f"F1 Score: {f1:.4f}")
+    return accuracy, f1
 
 
 
@@ -77,8 +76,9 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # Train the model
-    train_net(model, randomized_train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = True)
-    #model.load_state_dict(torch.load("../model_state_dicts/cnn_model_randomized.pt", map_location=device))
+    train_net(model, randomized_train_loader, val_loader, criterion, optimizer, device, epochs=5)
+    #train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5)
+    #model.load_state_dict(torch.load("../model_state_dicts/cnn_model_transformed.pt", map_location=device))
     model.eval()
 
     # Evaluate the model
@@ -89,4 +89,4 @@ if __name__ == "__main__":
 
 
 
-    torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized_and_equalized.pt")
+    torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized_with_sampling_1.pt")
