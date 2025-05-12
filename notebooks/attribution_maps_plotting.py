@@ -66,88 +66,89 @@ def get_conv_layer_by_index(model, index):
 
 ######################## ViSUALIZATION FUNCTIONS ########################
 
+
+def get_baseline(image, baseline_type='blur'):
+    if baseline_type == 'gray':
+        return torch.ones_like(image) * 0.5
+    elif baseline_type == 'noise':
+        return torch.randn_like(image) * 0.01  # Small noise baseline
+    elif baseline_type == 'zero':
+        return torch.zeros_like(image)
+    elif baseline_type == 'blur':
+        return GaussianBlur(kernel_size=21)(image)
+    else:
+        raise ValueError(f"Unknown baseline_type '{baseline_type}'")
+
+
 # Visualize Integrated Gradients for second conv layer
-def visualize_ig_for_images(conv_layer_idx, models, loader, n=5, model_names=None):
+def visualize_ig_for_images(conv_layer_idx, models, loader, n=5, model_names=None, baseline_type='blur'):
     """
     Visualize Integrated Gradients for a specific convolutional layer for normal and pneumonia images.
-    
+
     Args:
         conv_layer_idx (int): Index of the convolutional layer to use
         models (list): List of models to compare
         loader: Data loader to get samples from
         n (int): Number of samples to get from each class
         model_names (list, optional): List of names for the models for plot titles. Default is ["Model 1", "Model 2"]
+        baseline_type (str): Type of baseline to use ('blur', 'gray', 'noise', 'zero')
     """
-    # Set default model names if not provided
     if model_names is None:
-        model_names = [f"Model {i+1}" for i in range(len(models))]
-    
-    # Get samples
+        model_names = [f"Model {i + 1}" for i in range(len(models))]
+
     images_normal = get_samples_by_label(loader, 0, n=n)
     images_pneumonia = get_samples_by_label(loader, 1, n=n)
-    
-    # Get appropriate target layers by index
-    target_layers = [get_conv_layer_by_index(model, conv_layer_idx) for model in models]
 
-    # Initialize Integrated Gradients for all models
+    target_layers = [get_conv_layer_by_index(model, conv_layer_idx) for model in models]
     igs = [IntegratedGradients(model, steps=50) for model in models]
-    
-    # Create figure
+
     fig, axes = plt.subplots(2, n, figsize=(20, 10))
-    
-    # Define subplot labels starting at A
     subplot_labels = [chr(65 + i) for i in range(2 * n)]
-    
-    # Visualize normal images
+
+    # Normal images
     for i, image_normal in enumerate(images_normal):
         input_tensor_normal = image_normal.unsqueeze(0).to(device)
-        baseline_normal = GaussianBlur(kernel_size=11)(image_normal).unsqueeze(0).to(device)
-        
-        # Generate attributions for Integrated Gradients
-        attr_normal = [ig.generate_attributions(input_tensor_normal, target_class=0, baseline=baseline_normal) for ig in igs]
+        baseline_normal = get_baseline(image_normal, baseline_type).unsqueeze(0).to(device)
+
+        attr_normal = [ig.generate_attributions(input_tensor_normal, target_class=0, baseline=baseline_normal) for ig in
+                       igs]
         attr_map_normal = [ig.process_attributions(attr) for ig, attr in zip(igs, attr_normal)]
-        
-        # Process original image for display
+
         orig_normal = image_normal.permute(1, 2, 0).numpy()
         orig_normal = (orig_normal - orig_normal.min()) / (orig_normal.max() - orig_normal.min())
         orig_normal = (orig_normal * 255).astype(np.uint8)
-        
-        # Overlay attributions
-        overlay_ig_normal = [ig.overlay_attributions(orig_normal.copy(), attr_map) for ig, attr_map in zip(igs, attr_map_normal)]
-        
-        # Display the first model's attribution map
+
+        overlay_ig_normal = [ig.overlay_attributions(orig_normal.copy(), attr_map) for ig, attr_map in
+                             zip(igs, attr_map_normal)]
+
         axes[0, i].imshow(overlay_ig_normal[0])
-        # axes[0, i].set_title(f"Normal {i+1}")
         axes[0, i].axis("off")
-        axes[0, i].text(0.05, 0.05, subplot_labels[i], transform=axes[0, i].transAxes, 
-                        fontsize=14, fontweight='bold', color='white', 
+        axes[0, i].text(0.05, 0.05, subplot_labels[i], transform=axes[0, i].transAxes,
+                        fontsize=14, fontweight='bold', color='white',
                         bbox=dict(facecolor='black', alpha=0.8))
-    
-    # Visualize pneumonia images
+
+    # Pneumonia images
     for i, image_pneumonia in enumerate(images_pneumonia):
         input_tensor_pneumonia = image_pneumonia.unsqueeze(0).to(device)
-        baseline_pneumonia = GaussianBlur(kernel_size=11)(image_pneumonia).unsqueeze(0).to(device)
-        
-        # Generate attributions for Integrated Gradients
-        attr_pneumonia = [ig.generate_attributions(input_tensor_pneumonia, target_class=1, baseline=baseline_pneumonia) for ig in igs]
+        baseline_pneumonia = get_baseline(image_pneumonia, baseline_type).unsqueeze(0).to(device)
+
+        attr_pneumonia = [ig.generate_attributions(input_tensor_pneumonia, target_class=1, baseline=baseline_pneumonia)
+                          for ig in igs]
         attr_map_pneumonia = [ig.process_attributions(attr) for ig, attr in zip(igs, attr_pneumonia)]
-        
-        # Process original image for display
+
         orig_pneumonia = image_pneumonia.permute(1, 2, 0).numpy()
         orig_pneumonia = (orig_pneumonia - orig_pneumonia.min()) / (orig_pneumonia.max() - orig_pneumonia.min())
         orig_pneumonia = (orig_pneumonia * 255).astype(np.uint8)
-        
-        # Overlay attributions
-        overlay_ig_pneumonia = [ig.overlay_attributions(orig_pneumonia.copy(), attr_map) for ig, attr_map in zip(igs, attr_map_pneumonia)]
-        
-        # Display the first model's attribution map
+
+        overlay_ig_pneumonia = [ig.overlay_attributions(orig_pneumonia.copy(), attr_map) for ig, attr_map in
+                                zip(igs, attr_map_pneumonia)]
+
         axes[1, i].imshow(overlay_ig_pneumonia[0])
-        # axes[1, i].set_title(f"Pneumonia {i+1}")
         axes[1, i].axis("off")
-        axes[1, i].text(0.05, 0.05, subplot_labels[n + i], transform=axes[1, i].transAxes, 
-                        fontsize=14, fontweight='bold', color='white', 
+        axes[1, i].text(0.05, 0.05, subplot_labels[n + i], transform=axes[1, i].transAxes,
+                        fontsize=14, fontweight='bold', color='white',
                         bbox=dict(facecolor='black', alpha=0.8))
-    
+
     plt.tight_layout()
     plt.show()
 
@@ -231,7 +232,7 @@ def visualize_gradcam_for_images(conv_layer_idx, models, loader, n=5, model_name
     plt.tight_layout()
     plt.show()
 
-def visualize_comparisons(idx, conv_layer_idx, models, loader, n=5, model_names=None):
+def visualize_comparisons(idx, conv_layer_idx, models, loader, n=5, model_names=None, baseline_type='gray'):
     """
     Visualize comparison between models using Grad-CAM and Integrated Gradients
     
@@ -254,6 +255,7 @@ def visualize_comparisons(idx, conv_layer_idx, models, loader, n=5, model_names=
     # Get samples
     images_normal = get_samples_by_label(loader, 0, n=n)
     images_pneumonia = get_samples_by_label(loader, 1, n=n)
+
     
     # Get appropriate target layers by index
     target_layers = [get_conv_layer_by_index(model, conv_layer_idx) for model in models]
@@ -273,9 +275,13 @@ def visualize_comparisons(idx, conv_layer_idx, models, loader, n=5, model_names=
     input_tensor_pneumonia = image_pneumonia.unsqueeze(0).to(device)
     
     # Create blurred baselines
-    blur_transform = GaussianBlur(kernel_size=11)
-    baseline_normal = blur_transform(image_normal).unsqueeze(0).to(device)
-    baseline_pneumonia = blur_transform(image_pneumonia).unsqueeze(0).to(device)
+    #blur_transform = GaussianBlur(kernel_size=11)
+    #baseline_normal = blur_transform(image_normal).unsqueeze(0).to(device)
+    #baseline_pneumonia = blur_transform(image_pneumonia).unsqueeze(0).to(device)
+
+    baseline_normal = get_baseline(image_normal, baseline_type).unsqueeze(0).to(device)
+    baseline_pneumonia = get_baseline(image_pneumonia, baseline_type).unsqueeze(0).to(device)
+
     
     # Generate attributions for Integrated Gradients
     attr_normal = [ig.generate_attributions(input_tensor_normal, target_class=0, baseline=baseline_normal) for ig in igs]

@@ -4,11 +4,20 @@ from sklearn.metrics import accuracy_score
 from dataloaders import train_loader, val_loader, test_loader
 #from models import PneumoniaResNet
 from models import PneumoniaCNN
-from tqdm.notebook import tqdm
+from tqdm import tqdm
+import numpy as np
 
-def train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5):
+def train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = False):
     model.to(device)
     progress_bar = tqdm(range(epochs), desc="Training Progress", leave=True)
+    print("First 10 randomized labels in training set:", train_loader.dataset.targets[:10])
+    # Randomize labels iff running randomization
+    if randomized:
+        np.random.seed(42)
+        train_loader.dataset.targets = np.random.permutation(train_loader.dataset.targets).tolist()
+
+    print("First 10 randomized labels in training set:", train_loader.dataset.targets[:10])
+
     for epoch in progress_bar:
         model.train()
         running_loss = 0.0
@@ -62,7 +71,9 @@ if __name__ == "__main__":
     optimizer = optim.Adam(model.parameters(), lr=0.001)
 
     # Train the model
-    train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5)
+    train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = True)
+    #model.load_state_dict(torch.load("../model_state_dicts/cnn_model_randomized_2.pt", map_location=device))
+    #model.eval()
 
     # Evaluate the model
     # print("Validation Set:")
@@ -70,4 +81,6 @@ if __name__ == "__main__":
     print("Test Set:")
     eval_net(model, test_loader, device)
 
-    torch.save(model.state_dict(), "cnn_model_transformed.pt")
+
+
+    torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized.pt")

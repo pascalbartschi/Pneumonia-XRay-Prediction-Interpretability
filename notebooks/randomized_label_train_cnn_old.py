@@ -48,5 +48,5 @@ with torch.no_grad():
 
 print(f"Test Accuracy: {accuracy_score(all_labels, all_preds):.4f}")
 
-torch.save(model, "cnn_model_randomized.pt")
-torch.save(model.state_dict(), "cnn_model_randomized_2.pt")
+#torch.save(model, "cnn_model_randomized.pt")
+torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized.pt")
