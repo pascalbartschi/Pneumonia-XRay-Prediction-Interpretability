@@ -84,7 +84,7 @@ if __name__ == "__main__":
     # Evaluate the model
     # print("Validation Set:")
     # eval_net(model, val_loader, device)
-    print("Test Set:")
+    print("Test Set for Normal Training:")
     eval_net(model, test_loader, device)
 
 
@@ -105,7 +105,7 @@ if __name__ == "__main__":
     # Evaluate the model
     # print("Validation Set:")
     # eval_net(model, val_loader, device)
-    print("Test Set:")
+    print("Test Set Randomized Training:")
     eval_net(model, test_loader, device)
 
     torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized_with_sampling_1.pt")
