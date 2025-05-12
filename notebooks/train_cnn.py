@@ -7,6 +7,11 @@ from models import PneumoniaCNN
 from tqdm import tqdm
 import numpy as np
 
+# Add a confusion matrix
+from sklearn.metrics import confusion_matrix
+import seaborn as sns
+import matplotlib.pyplot as plt
+
 def train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = False):
     model.to(device)
     progress_bar = tqdm(range(epochs), desc="Training Progress", leave=True)
@@ -62,6 +67,16 @@ def eval_net(model, data_loader, device):
             all_labels.extend(labels.numpy())
     accuracy = accuracy_score(all_labels, all_preds)
     print(f"Accuracy: {accuracy:.4f}")
+
+
+    cm = confusion_matrix(all_labels, all_preds)
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', xticklabels=['Normal', 'Pneumonia'], yticklabels=['Normal', 'Pneumonia'])
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+    plt.title('Confusion Matrix')
+    plt.show()
+
     return accuracy
 
 if __name__ == "__main__":
@@ -72,6 +87,7 @@ if __name__ == "__main__":
 
     # Train the model
     train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = True)
+    # train_net(model, train_loader, val_loader, criterion, optimizer, device, epochs=5, randomized = True)
     #model.load_state_dict(torch.load("../model_state_dicts/cnn_model_randomized_2.pt", map_location=device))
     #model.eval()
 
@@ -83,4 +99,4 @@ if __name__ == "__main__":
 
 
 
-    torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized.pt")
+    torch.save(model.state_dict(), "../model_state_dicts/cnn_model_randomized_sampler.pt")
